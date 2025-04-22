@@ -12,12 +12,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/fb-posts', async (req, res) => {
   try {
-    const url = `https://graph.facebook.com/v19.0/${PAGE_ID}/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=${ACCESS_TOKEN}`;
+    const url = `https://graph.facebook.com/v22.0/${PAGE_ID}/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=${ACCESS_TOKEN}`;
+
     const fbRes = await fetch(url);
+
+    if (!fbRes.ok) {
+      const errText = await fbRes.text();
+      console.error("⛔ Facebook API Error:", errText); // 👈 logs error body
+      return res.status(500).json({ error: 'Facebook API Error', details: errText });
+    }
+
     const json = await fbRes.json();
+    console.log("✅ Facebook JSON:", JSON.stringify(json, null, 2)); // 👈 logs response
 
     const posts = json.data
-      .filter(p => p.message && p.message.includes('#hookedonfandf'))
+      ?.filter(p => p.message && p.message.includes('#hookedonfandf'))
       .slice(0, 2)
       .map(p => {
         const images = [];
@@ -31,6 +40,14 @@ app.get('/fb-posts', async (req, res) => {
         }
         return { text: p.message, images };
       });
+
+    res.json(posts);
+  } catch (err) {
+    console.error("🔥 Unhandled error:", err); // 👈 logs network/server issues
+    res.status(500).json({ error: 'Failed to fetch posts' });
+  }
+});
+
 
     res.json(posts);
   } catch (error) {
