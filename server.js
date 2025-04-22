@@ -1,4 +1,8 @@
+const express = require('express');
+const fetch = require('node-fetch'); // if you're using node-fetch v2
+const path = require('path');
 
+const app = express(); // 👈 THIS is what's missing
 app.get('/fb-posts', async (req, res) => {
   try {
     const url = `https://graph.facebook.com/v22.0/${PAGE_ID}/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=${ACCESS_TOKEN}`;
