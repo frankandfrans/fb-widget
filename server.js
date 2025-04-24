@@ -3,7 +3,7 @@ const fetch = require('node-fetch'); // if you're using node-fetch v2
 const path = require('path');
 
 const PAGE_ID = '210175288809'; // Frank & Fran's Page ID
-const ACCESS_TOKEN = 'EAAUHRrIZCMu8BO6T8RNNBNickJ6dZCZBiwm9EI1bPxZAGKAsh1ZCnhyT8wo9Oxa7blgX4nXIztbXlLjCiQI2qL02pGqbTakTM9kPLDga7Adv6tTnEYUwPuxncDZAPAECJZCz9IB9klTTwrpWgbFzc78a0q2ZAxZAmQZCdwbPWHusB2j9M4ih6slQZDZD';
+const ACCESS_TOKEN = 'EAAUHRrIZCMu8BO0gCUncJKbWiYRr8rqW66aiH7Ic8aZCB3E6GS9cvAiGmmBq1MchuHeLKH4AiXojwctDtcf5RLZBlSogmT6VSIqb2BJKttfPeiWDzEKzM8GORtrNz7Xg3q9RxsxjK87UazU0TnBcMUZCq9DbUTaoEZAriexreZCcfGdyAUcmsILvLSnSMPZC9ZBTLyttN7kiQCOmpvkx';
 
 const app = express(); // 👈 THIS is what's missing
 app.get('/fb-posts', async (req, res) => {
