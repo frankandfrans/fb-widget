@@ -45,5 +45,8 @@ app.get('/fb-posts', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+app.get('/', (req, res) => {
+  res.send('🎣 Frank & Fran’s Facebook Widget is live! Try <a href="/fb-posts">/fb-posts</a>');
+});
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
        
