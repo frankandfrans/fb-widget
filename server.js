@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const path = require('path');
 
 const PAGE_ID = '210175288809';
-const ACCESS_TOKEN = 'EAAUHRrIZCMu8BO3i7jpisyyoZCnVAmwlwGEJux7j0ZA62cZC9ZBgNRmZCgs9OviwjRYHcoHf6C7z3ojjFTqZBNrmY1MgbeZBjxbnKBxeZCZC1DflBqfMsI56fZCeDHi5Ws8aNE1MOpwOyGcRooXor4vl0OkqDqLGeZBBAT484bZCgU03cz5PCwuy9ZBeZBc2DkgZBqyuyYaQlXD4TlfKyFqpGE8ZD';
+const ACCESS_TOKEN = 'REPLACE_WITH_YOUR_VALID_PAGE_ACCESS_TOKEN';
 
 const app = express();
 
@@ -32,8 +32,8 @@ app.get('/fb-posts', async (req, res) => {
     console.log("✅ Facebook JSON:", JSON.stringify(json, null, 2));
 
     const posts = json.data
-      ?.filter(p => p.message && p.message.includes('#hookedonfandf'))
-      .slice(0, 2)
+      ?.filter(p => p.message && p.message.includes('#hookedonfandf') && p.message.includes('#fishingreport'))
+      .slice(0, 1)
       .map(p => {
         const images = [];
         const attach = p.attachments?.data[0];
