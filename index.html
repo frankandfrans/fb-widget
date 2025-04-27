@@ -39,7 +39,6 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       overflow-y: auto;
       max-height: 75vh;
-      animation: slowScroll 60s linear infinite alternate;
     }
     .slideshow {
       flex: 1;
@@ -88,7 +87,7 @@
   </div>
 
   <script>
-    // Auto-refresh every 30 minutes (1800000 ms)
+    // Auto-refresh every 30 minutes
     setTimeout(() => {
       window.location.reload();
     }, 1800000);
@@ -107,6 +106,13 @@
 
           const postsDiv = document.getElementById('posts');
           postsDiv.innerHTML = `<p>${lines.join('<br><br>')}</p>`;
+
+          // Only animate scroll if needed
+          setTimeout(() => {
+            if (postsDiv.scrollHeight > postsDiv.clientHeight) {
+              postsDiv.style.animation = "slowScroll 60s linear infinite alternate";
+            }
+          }, 500);
 
           const slideshow = document.getElementById('slideshow');
           const images = firstPost.images.map((img, index) => {
