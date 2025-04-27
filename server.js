@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const path = require('path');
 
 const PAGE_ID = '210175288809';
-const ACCESS_TOKEN = 'REPLACE_WITH_YOUR_VALID_PAGE_ACCESS_TOKEN';
+const ACCESS_TOKEN = 'EAAUHRrIZCMu8BO1yR5K4ZBHGAFKZCfxILCa7t17HAUCHqTYVtsLsqfrezv8KH9eHfpzaTUAks0xgVT98WL8jKZAFwNhHRqpQu3qyiohzSLZCqMhgSLsFCfWET7Ku4zeleYUYF3AtRy3MR9AMVRZA6pWQ9cu3sc7lap5fOpJlUJd8JLc6b61mTxpverxlwZD';
 
 const app = express();
 
