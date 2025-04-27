@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frank & Fran's Facebook Widget</title>
+</head>
+<body>
+  <h1>Frank & Fran's Fishing Reports</h1>
+  <div id="posts"></div>
+  <script>
+    fetch('/fb-posts')
+      .then(res => res.json())
+      .then(data => {
+        const postsDiv = document.getElementById('posts');
+        data.forEach(post => {
+          const postBlock = document.createElement('div');
+          postBlock.style.marginBottom = "40px";
+          postBlock.innerHTML = `
+            <p>${post.text}</p>
+            <div>${post.images.map(img => `<img src="${img}" style="width:300px;margin:5px;">`).join('')}</div>
+            <hr>
+          `;
+          postsDiv.appendChild(postBlock);
+        });
+      });
+  </script>
+</body>
+</html>
