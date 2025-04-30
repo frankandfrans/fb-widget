@@ -1,98 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>#hookedonfandf Live Widget</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frank & Fran's Fishing Report</title>
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      overflow-x: hidden;
+      background: linear-gradient(-45deg, #cce0f5, #f0f9ff, #cce0f5, #f0f9ff);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+      color: #003366;
+      animation: slideDown 1s ease-out;
+    }
+    .content {
       display: flex;
-      flex-direction: row;
-      height: 100vh;
-      width: 100vw;
+      justify-content: center;
+      align-items: start;
+      gap: 40px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .post-text {
+      flex: 1;
+      font-size: 2em;
+      text-align: left;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      overflow-y: auto;
+      max-height: 75vh;
+    }
+    .slideshow {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 75vh;
+      position: relative;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       overflow: hidden;
     }
-    .text-panel {
-      width: 40%;
-      padding: 40px;
-      font-size: 2.5rem;
-      line-height: 1.4;
-      color: #222;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #fff;
-    }
-    .image-panel {
-      width: 60%;
-      background-color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    .image-panel img {
-      max-width: 100%;
+    .slideshow img {
+      width: auto;
       max-height: 100%;
-      object-fit: contain;
+      max-width: 100%;
       position: absolute;
       opacity: 0;
-      transition: opacity 1s ease-in-out;
+      transition: opacity 2s ease, transform 2s ease;
     }
-    .image-panel img.active {
+    .slideshow img.active {
       opacity: 1;
+      transform: scale(1.05);
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes slowScroll {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-10%); }
     }
   </style>
 </head>
 <body>
-  <div class="text-panel" id="postText">Loading...</div>
-  <div class="image-panel" id="imagePanel"></div>
+  <h1 id="header">Frank & Fran's Fishing Report</h1>
+  <div class="content">
+    <div id="posts" class="post-text"></div>
+    <div id="slideshow" class="slideshow"></div>
+  </div>
 
   <script>
-    const postTextDiv = document.getElementById("postText");
-    const imagePanel = document.getElementById("imagePanel");
+    // Auto-refresh every 30 minutes
+    setTimeout(() => {
+      window.location.reload();
+    }, 1800000);
 
-    async function loadData() {
-      const res = await fetch("/fb-posts");
-      const data = await res.json();
-      const images = [];
+    fetch('/fb-posts')
+      .then(res => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
+      .then(data => {
+        if (data.length > 0) {
+          const firstPost = data[0];
+          const lines = firstPost.text.split('\n');
+          const titleLine = lines.shift();
+          document.getElementById('header').innerText = titleLine;
 
-      data.forEach(post => {
-        post.images.forEach(src => {
-          images.push({ src, text: post.text });
-        });
+          const postsDiv = document.getElementById('posts');
+          postsDiv.innerHTML = `<p>${lines.join('<br><br>')}</p>`;
+
+          // Only animate scroll if needed
+          setTimeout(() => {
+            if (postsDiv.scrollHeight > postsDiv.clientHeight) {
+              postsDiv.style.animation = "slowScroll 60s linear infinite alternate";
+            }
+          }, 500);
+
+          const slideshow = document.getElementById('slideshow');
+          const images = firstPost.images.map((img, index) => {
+            const imageEl = document.createElement('img');
+            imageEl.src = img;
+            if (index === 0) imageEl.classList.add('active');
+            slideshow.appendChild(imageEl);
+            return imageEl;
+          });
+
+          let currentSlide = 0;
+          setInterval(() => {
+            images[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % images.length;
+            images[currentSlide].classList.add('active');
+          }, 8000);
+        }
+      })
+      .catch(err => {
+        console.error('Error loading posts:', err);
+        document.getElementById('posts').innerHTML = `<p style="color:red;">Failed to load posts. Please refresh.</p>`;
       });
-
-      if (images.length === 0) {
-        postTextDiv.textContent = "No #hookedonfandf posts with images found.";
-        return;
-      }
-
-      images.forEach((imgObj, i) => {
-        const img = document.createElement("img");
-        img.src = imgObj.src;
-        if (i === 0) img.classList.add("active");
-        imagePanel.appendChild(img);
-      });
-
-      let current = 0;
-      const imageEls = document.querySelectorAll(".image-panel img");
-
-      function rotate() {
-        imageEls[current].classList.remove("active");
-        current = (current + 1) % imageEls.length;
-        imageEls[current].classList.add("active");
-        postTextDiv.textContent = images[current].text;
-      }
-
-      postTextDiv.textContent = images[0].text;
-      setInterval(rotate, 8000);
-    }
-
-    loadData();
   </script>
 </body>
 </html>
