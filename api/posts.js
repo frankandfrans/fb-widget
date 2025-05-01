@@ -1,7 +1,8 @@
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
-  const url = `https://graph.facebook.com/v19.0/YOUR_PAGE_ID/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=YOUR_ACCESS_TOKEN`;
+  const url = `https://graph.facebook.com/v19.0/210175288809/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=EAAUHRrIZCMu8BO2ZCB9hmKb6iJfis22wnmH0ySeUHTE1TdmQTkxavxZCgs22iXmItj583cxVxlf8mLucOJhMkaAoZCZCizikrsO4gAH1dVsTeh5mzwHt5NP9yoX7MT0Dl4lEj4t2O3cQbQ2ZArKKAZBgyYO0M82DvZAEvSHkZCji721VHhoT39fmMRsEs9rIZD`;
+
 
   try {
     const fbRes = await fetch(url);
