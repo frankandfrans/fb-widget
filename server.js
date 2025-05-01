@@ -6,7 +6,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 const PAGE_ID = '210175288809';
-const ACCESS_TOKEN = 'PASTE_YOUR_NON_EXPIRING_TOKEN_HERE';
+const ACCESS_TOKEN = 'EAAUHRrIZCMu8BO2ZCB9hmKb6iJfis22wnmH0ySeUHTE1TdmQTkxavxZCgs22iXmItj583cxVxlf8mLucOJhMkaAoZCZCizikrsO4gAH1dVsTeh5mzwHt5NP9yoX7MT0Dl4lEj4t2O3cQbQ2ZArKKAZBgyYO0M82DvZAEvSHkZCji721VHhoT39fmMRsEs9rIZD';
 
 const app = express();
 
