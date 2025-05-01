@@ -1,32 +1,28 @@
 
-const fetch = require('node-fetch');
-
-module.exports = async (req, res) => {
-  const PAGE_ID = '210175288809';
-  const ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN_HERE';
-
-  const url = `https://graph.facebook.com/v19.0/${PAGE_ID}/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=${ACCESS_TOKEN}`;
+export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
+  const url = `https://graph.facebook.com/v19.0/YOUR_PAGE_ID/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=YOUR_ACCESS_TOKEN`;
 
   try {
     const fbRes = await fetch(url);
     const json = await fbRes.json();
+    const posts = json.data?.filter(p => p.message && p.message.includes("#hookedonfandf") && p.message.includes("#fishingreport"));
 
-    const posts = (json.data || [])
-      .filter(p => p.message && p.message.includes("#hookedonfandf") && p.message.includes("#fishingreport"))
-      .slice(0, 1)
-      .map(p => {
-        const images = [];
-        const attach = p.attachments?.data[0];
-        if (attach?.subattachments) {
-          attach.subattachments.data.forEach(s => images.push(s.media.image.src));
-        } else if (attach?.media) {
-          images.push(attach.media.image.src);
-        }
-        return { text: p.message, images };
-      });
+    if (!posts || posts.length === 0) {
+      return res.status(200).json([]);
+    }
 
-    res.status(200).json(posts);
+    const latest = posts[0];
+    const images = [];
+    const attach = latest.attachments?.data[0];
+    if (attach?.subattachments) {
+      attach.subattachments.data.forEach(s => images.push(s.media.image.src));
+    } else if (attach?.media) {
+      images.push(attach.media.image.src);
+    }
+
+    res.status(200).json([{ text: latest.message, images }]);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch" });
+    res.status(500).json({ error: "Failed to fetch Facebook posts" });
   }
-};
+}
