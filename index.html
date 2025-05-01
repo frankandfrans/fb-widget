@@ -1,18 +1,97 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Frank & Fran's Fishing Report</title>
-  <link rel="stylesheet" href="style.css" />
+<title>Frank & Fran's Fishing Report</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #eef4fa;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+h1 {
+    color: #123164;
+    margin-top: 40px;
+}
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+}
+.text, .images {
+    background: white;
+    margin: 10px;
+    padding: 20px;
+}
+.text {
+    flex: 3;
+    font-size: 2vw;
+    text-align: left;
+}
+.images {
+    flex: 2;
+}
+.images img {
+    max-width: 100%;
+    height: auto;
+    display: none;
+}
+.images img.active {
+    display: block;
+}
+.error {
+    color: red;
+    font-size: 24px;
+}
+</style>
 </head>
 <body>
-  <h1 id="header">Frank & Fran's Fishing Report</h1>
-  <div class="container">
-    <div class="text-box" id="textBox">Loading report...</div>
-    <div class="image-box" id="imageBox"></div>
-  </div>
-  <script src="script.js"></script>
+<h1>Frank & Fran's Fishing Report</h1>
+<div class="container">
+    <div class="text" id="text"></div>
+    <div class="images" id="images"></div>
+</div>
+
+<script>
+async function loadPosts() {
+    try {
+        const res = await fetch("/api/fb-posts");
+        if (!res.ok) throw new Error("Network response was not ok");
+        const posts = await res.json();
+
+        if (!posts.length) {
+            document.getElementById('text').innerHTML = "<div class='error'>No fishing report found.</div>";
+            return;
+        }
+
+        const post = posts[0];
+        document.getElementById('text').innerText = post.text;
+
+        const imgDiv = document.getElementById('images');
+        post.images.forEach((src, i) => {
+            const img = document.createElement('img');
+            img.src = src;
+            if (i === 0) img.classList.add('active');
+            imgDiv.appendChild(img);
+        });
+
+        let current = 0;
+        setInterval(() => {
+            const imgs = document.querySelectorAll("#images img");
+            imgs.forEach(img => img.classList.remove('active'));
+            current = (current + 1) % imgs.length;
+            imgs[current].classList.add('active');
+        }, 5000);
+    } catch (err) {
+        console.error(err);
+        document.getElementById('text').innerHTML = "<div class='error'>Failed to load posts. Please refresh.</div>";
+    }
+}
+
+loadPosts();
+</script>
 </body>
 </html>
