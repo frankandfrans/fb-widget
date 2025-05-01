@@ -2,96 +2,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Frank & Fran's Fishing Report</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background-color: #eef4fa;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-}
-h1 {
-    color: #123164;
-    margin-top: 40px;
-}
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px;
-}
-.text, .images {
-    background: white;
-    margin: 10px;
-    padding: 20px;
-}
-.text {
-    flex: 3;
-    font-size: 2vw;
-    text-align: left;
-}
-.images {
-    flex: 2;
-}
-.images img {
-    max-width: 100%;
-    height: auto;
-    display: none;
-}
-.images img.active {
-    display: block;
-}
-.error {
-    color: red;
-    font-size: 24px;
-}
-</style>
+    <title>Frank & Fran's Fishing Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eef4fa;
+            color: #0a2a5d;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .text, .images {
+            flex: 1;
+            padding: 20px;
+        }
+        .images img {
+            max-width: 100%;
+            margin-bottom: 10px;
+            display: none;
+        }
+        .images img.active {
+            display: block;
+        }
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-<h1>Frank & Fran's Fishing Report</h1>
-<div class="container">
-    <div class="text" id="text"></div>
-    <div class="images" id="images"></div>
-</div>
+    <h1>Frank & Fran's Fishing Report</h1>
+    <div class="container">
+        <div class="text" id="text">Loading...</div>
+        <div class="images" id="images"></div>
+    </div>
 
-<script>
-async function loadPosts() {
-    try {
-        const res = await fetch("/api/fb-posts");
-        if (!res.ok) throw new Error("Network response was not ok");
-        const posts = await res.json();
+    <script>
+        async function loadPosts() {
+            try {
+                const res = await fetch('/api/posts');
+                if (!res.ok) throw new Error("Network response was not ok");
+                const posts = await res.json();
 
-        if (!posts.length) {
-            document.getElementById('text').innerHTML = "<div class='error'>No fishing report found.</div>";
-            return;
+                if (!posts.length) {
+                    document.getElementById("text").innerHTML = "<span class='error'>No fishing report found.</span>";
+                    return;
+                }
+
+                const post = posts[0];
+                document.getElementById("text").innerText = post.text;
+
+                const imagesContainer = document.getElementById("images");
+                post.images.forEach((src, index) => {
+                    const img = document.createElement("img");
+                    img.src = src;
+                    if (index === 0) img.classList.add("active");
+                    imagesContainer.appendChild(img);
+                });
+
+                const imgs = imagesContainer.querySelectorAll("img");
+                let current = 0;
+                setInterval(() => {
+                    imgs[current].classList.remove("active");
+                    current = (current + 1) % imgs.length;
+                    imgs[current].classList.add("active");
+                }, 4000);
+
+            } catch (err) {
+                document.getElementById("text").innerHTML = "<span class='error'>Failed to load posts. Please refresh.</span>";
+            }
         }
 
-        const post = posts[0];
-        document.getElementById('text').innerText = post.text;
-
-        const imgDiv = document.getElementById('images');
-        post.images.forEach((src, i) => {
-            const img = document.createElement('img');
-            img.src = src;
-            if (i === 0) img.classList.add('active');
-            imgDiv.appendChild(img);
-        });
-
-        let current = 0;
-        setInterval(() => {
-            const imgs = document.querySelectorAll("#images img");
-            imgs.forEach(img => img.classList.remove('active'));
-            current = (current + 1) % imgs.length;
-            imgs[current].classList.add('active');
-        }, 5000);
-    } catch (err) {
-        console.error(err);
-        document.getElementById('text').innerHTML = "<div class='error'>Failed to load posts. Please refresh.</div>";
-    }
-}
-
-loadPosts();
-</script>
+        loadPosts();
+    </script>
 </body>
 </html>
