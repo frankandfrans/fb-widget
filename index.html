@@ -2,91 +2,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Frank & Fran's Fishing Report</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #eef4fa;
-            color: #0a2a5d;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        h1 {
-            margin-top: 20px;
-        }
-        .container {
-            display: flex;
-            width: 90%;
-            max-width: 1200px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .text, .images {
-            flex: 1;
-            padding: 20px;
-        }
-        .images img {
-            max-width: 100%;
-            margin-bottom: 10px;
-            display: none;
-        }
-        .images img.active {
-            display: block;
-        }
-        .error {
-            color: red;
-        }
-    </style>
+  <title>Frank & Fran's Fishing Report</title>
+  <style>
+    body { background: #eef4fa; font-family: Arial; margin: 0; padding: 0; text-align: center; color: #0a2a5d; }
+    h1 { padding: 20px; }
+    .container { display: flex; justify-content: space-around; align-items: flex-start; padding: 20px; height: 80vh; }
+    .text { flex: 3; font-size: 2vw; text-align: left; background: white; padding: 20px; }
+    .images { flex: 2; background: #000; }
+    .images img { max-width: 100%; display: none; }
+    .images img.active { display: block; }
+    .error { color: red; font-size: 3vw; }
+  </style>
 </head>
 <body>
-    <h1>Frank & Fran's Fishing Report</h1>
-    <div class="container">
-        <div class="text" id="text">Loading...</div>
-        <div class="images" id="images"></div>
-    </div>
+<h1>Frank & Fran's Fishing Report</h1>
+<div class="container">
+  <div class="text" id="text">Loading...</div>
+  <div class="images" id="images"></div>
+</div>
 
-    <script>
-        async function loadPosts() {
-            try {
-                const res = await fetch('/api/posts');
-                if (!res.ok) throw new Error("Network response was not ok");
-                const posts = await res.json();
+<script>
+fetch('/api/posts').then(r=>r.json()).then(posts => {
+  if (!posts.length) {
+    document.getElementById('text').innerHTML = "<div class='error'>No fishing report found.</div>";
+    return;
+  }
 
-                if (!posts.length) {
-                    document.getElementById("text").innerHTML = "<span class='error'>No fishing report found.</span>";
-                    return;
-                }
+  const post = posts[0];
+  document.getElementById('text').innerText = post.text;
 
-                const post = posts[0];
-                document.getElementById("text").innerText = post.text;
+  const container = document.getElementById('images');
+  post.images.forEach((src, i) => {
+    const img = document.createElement('img');
+    img.src = src;
+    if (i === 0) img.classList.add('active');
+    container.appendChild(img);
+  });
 
-                const imagesContainer = document.getElementById("images");
-                post.images.forEach((src, index) => {
-                    const img = document.createElement("img");
-                    img.src = src;
-                    if (index === 0) img.classList.add("active");
-                    imagesContainer.appendChild(img);
-                });
-
-                const imgs = imagesContainer.querySelectorAll("img");
-                let current = 0;
-                setInterval(() => {
-                    imgs[current].classList.remove("active");
-                    current = (current + 1) % imgs.length;
-                    imgs[current].classList.add("active");
-                }, 4000);
-
-            } catch (err) {
-                document.getElementById("text").innerHTML = "<span class='error'>Failed to load posts. Please refresh.</span>";
-            }
-        }
-
-        loadPosts();
-    </script>
+  let index = 0;
+  setInterval(() => {
+    const imgs = document.querySelectorAll('#images img');
+    imgs.forEach(img => img.classList.remove('active'));
+    imgs[index % imgs.length].classList.add('active');
+    index++;
+  }, 4000);
+}).catch(() => {
+  document.getElementById('text').innerHTML = "<div class='error'>Failed to load posts.</div>";
+});
+</script>
 </body>
 </html>
