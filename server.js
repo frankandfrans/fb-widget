@@ -1,42 +1,60 @@
-
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
+
+const PAGE_ID = '210175288809';
+const ACCESS_TOKEN = 'REPLACE_WITH_YOUR_VALID_PAGE_ACCESS_TOKEN';
+
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use((req, res, next) => {
+  res.header('Cache-Control', 'no-store');
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+});
 
-app.get('/api/posts', async (req, res) => {
-    try {
-        const PAGE_ID = process.env.PAGE_ID || '210175288809';
-        const ACCESS_TOKEN = process.env.ACCESS_TOKEN || 'EAAUHRrIZCMu8BO2ZCB9hmKb6iJfis22wnmH0ySeUHTE1TdmQTkxavxZCgs22iXmItj583cxVxlf8mLucOJhMkaAoZCZCizikrsO4gAH1dVsTeh5mzwHt5NP9yoX7MT0Dl4lEj4t2O3cQbQ2ZArKKAZBgyYO0M82DvZAEvSHkZCji721VHhoT39fmMRsEs9rIZD';
-        const HASHTAG = process.env.HASHTAG || '#fishingreport';
+app.use(express.static(__dirname));
 
-        const url = `https://graph.facebook.com/v19.0/${210175288809}/posts?fields=message,full_picture,created_time&access_token=${EAAUHRrIZCMu8BO2ZCB9hmKb6iJfis22wnmH0ySeUHTE1TdmQTkxavxZCgs22iXmItj583cxVxlf8mLucOJhMkaAoZCZCizikrsO4gAH1dVsTeh5mzwHt5NP9yoX7MT0Dl4lEj4t2O3cQbQ2ZArKKAZBgyYO0M82DvZAEvSHkZCji721VHhoT39fmMRsEs9rIZD}`;
-        const response = await fetch(url);
-        const data = await response.json();
+app.get('/fb-posts', async (req, res) => {
+  try {
+    const url = `https://graph.facebook.com/v22.0/${PAGE_ID}/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=${ACCESS_TOKEN}`;
+    const fbRes = await fetch(url);
 
-        const posts = data.data;
-        const fishingPost = posts.find(post => post.message && post.message.includes(HASHTAG));
-
-        if (fishingPost) {
-            res.json({
-                message: fishingPost.message,
-                imageUrl: fishingPost.full_picture || ''
-            });
-        } else {
-            res.json({
-                message: "No fishing report found.",
-                imageUrl: ""
-            });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Error fetching post' });
+    if (!fbRes.ok) {
+      const errText = await fbRes.text();
+      console.error("⛔ Facebook API Error:", errText);
+      return res.status(500).json({ error: 'Facebook API Error', details: errText });
     }
+
+    const json = await fbRes.json();
+    console.log("✅ Facebook JSON:", JSON.stringify(json, null, 2));
+
+    const posts = json.data
+      ?.filter(p => p.message && p.message.includes('#hookedonfandf') && p.message.includes('#fishingreport'))
+      .slice(0, 1)
+      .map(p => {
+        const images = [];
+        const attach = p.attachments?.data[0];
+        if (attach?.subattachments) {
+          attach.subattachments.data.forEach(s => {
+            images.push(s.media.image.src);
+          });
+        } else if (attach?.media) {
+          images.push(attach.media.image.src);
+        }
+        return { text: p.message, images };
+      });
+
+    res.json(posts);
+  } catch (err) {
+    console.error("🔥 Unhandled error:", err);
+    res.status(500).json({ error: 'Failed to fetch posts' });
+  }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
