@@ -1,8 +1,9 @@
+
 {
   "name": "fb-widget",
   "version": "1.0.0",
+  "description": "Facebook Fishing Report Widget",
   "main": "server.js",
-  "type": "commonjs",
   "scripts": {
     "start": "node server.js"
   },
