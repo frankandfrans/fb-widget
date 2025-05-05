@@ -3,96 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Frank & Fran's Fishing Report</title>
+  <title>Frank & Fran's Fishing Reports</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: #f8f8f8;
       margin: 0;
       padding: 20px;
       text-align: center;
-      overflow-x: hidden;
-      background: linear-gradient(-45deg, #cce0f5, #f0f9ff, #cce0f5, #f0f9ff);
-      background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
     }
     h1 {
-      font-size: 3em;
+      font-size: 2.5em;
       margin-bottom: 20px;
       color: #003366;
-      animation: slideDown 1s ease-out;
     }
-    .content {
-      display: flex;
-      justify-content: center;
-      align-items: start;
-      gap: 40px;
-      max-width: 1600px;
-      margin: 0 auto;
-    }
-    .post-text {
-      flex: 1;
-      font-size: 2em;
+    .post-content {
+      font-size: 1.2em;
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
       text-align: left;
       background: #ffffff;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      overflow-y: auto;
-      max-height: 75vh;
-      animation: slowScroll 60s linear infinite alternate;
     }
-    .slideshow {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 75vh;
-      position: relative;
-      background: #ffffff;
+    #slideshow img {
+      width: 500px;
+      margin: 20px 0;
       border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-    .slideshow img {
-      width: auto;
-      max-height: 100%;
-      max-width: 100%;
-      position: absolute;
-      opacity: 0;
-      transition: opacity 2s ease, transform 2s ease;
-    }
-    .slideshow img.active {
-      opacity: 1;
-      transform: scale(1.05);
-    }
-    @keyframes slideDown {
-      from { transform: translateY(-50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    @keyframes slowScroll {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-10%); }
     }
   </style>
 </head>
 <body>
   <h1 id="header">Frank & Fran's Fishing Report</h1>
-  <div class="content">
-    <div id="posts" class="post-text"></div>
-    <div id="slideshow" class="slideshow"></div>
-  </div>
-
+  <div id="posts"></div>
+  <div id="slideshow"></div>
   <script>
-    // Auto-refresh every 30 minutes (1800000 ms)
-    setTimeout(() => {
-      window.location.reload();
-    }, 1800000);
-
     fetch('/fb-posts')
       .then(res => {
         if (!res.ok) throw new Error("Network response was not ok");
@@ -106,23 +52,25 @@
           document.getElementById('header').innerText = titleLine;
 
           const postsDiv = document.getElementById('posts');
-          postsDiv.innerHTML = `<p>${lines.join('<br><br>')}</p>`;
+          const block = document.createElement('div');
+          block.className = "post-content";
+          block.innerHTML = `<p>${lines.join('<br>')}</p>`;
+          postsDiv.appendChild(block);
 
+          // Set up the slideshow
+          let slideIndex = 0;
           const slideshow = document.getElementById('slideshow');
-          const images = firstPost.images.map((img, index) => {
-            const imageEl = document.createElement('img');
-            imageEl.src = img;
-            if (index === 0) imageEl.classList.add('active');
-            slideshow.appendChild(imageEl);
-            return imageEl;
-          });
+          const images = firstPost.images;
 
-          let currentSlide = 0;
-          setInterval(() => {
-            images[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % images.length;
-            images[currentSlide].classList.add('active');
-          }, 8000);
+          function showSlide() {
+            slideshow.innerHTML = `<img src="${images[slideIndex]}" alt="Slide ${slideIndex+1}">`;
+            slideIndex = (slideIndex + 1) % images.length;
+          }
+
+          if (images.length > 0) {
+            showSlide(); // show first image immediately
+            setInterval(showSlide, 8000); // change every 8 seconds
+          }
         }
       })
       .catch(err => {
