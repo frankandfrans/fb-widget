@@ -1,6 +1,5 @@
-
 {
-  "name": "fb-widget-debug",
+  "name": "fb-widget-ssr",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
