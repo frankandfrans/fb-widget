@@ -1,72 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Frank & Fran's Fishing Report</title>
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #e9eff5;
-    color: #0b2653;
-    display: flex;
-    height: 100vh;
-}
-#text {
-    flex: 1;
-    padding: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: left;
-    font-weight: 800;
-    font-size: clamp(24px, 5vw, 70px);
-    line-height: 1.2;
-}
-#image {
-    flex: 1;
-    background-color: #ccc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-#image img {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-}
-</style>
+    <title>Frank & Fran's Fishing Report</title>
+    <style>
+        body { font-family: Arial; margin: 0; background: #eef4fa; color: #001d4a; text-align: center; }
+        h1 { padding: 20px; }
+        #content { display: flex; justify-content: space-around; align-items: center; height: 90vh; }
+        #text { 
+        flex: 1; 
+        padding: 20px; 
+        overflow-y: auto; 
+        font-weight: bold;
+        font-size: clamp(20px, 3vw, 50px); 
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+        #photos { flex: 1; }
+        #photos img { max-width: 100%; max-height: 80vh; display: none; }
+        #photos img.active { display: block; }
+    </style>
 </head>
 <body>
-<div id="text">Loading latest fishing report...</div>
-<div id="image"><em>Loading image...</em></div>
+    <h1>Frank & Fran's Fishing Report</h1>
+    <div id="content">
+        <div id="text">Loading...</div>
+        <div id="photos"></div>
+    </div>
+    <script>
+        async function fetchPosts() {
+            const res = await fetch('/fb-posts');
+            const posts = await res.json();
+            if (!posts.length) {
+                document.getElementById('text').innerText = 'Failed to load posts. Please refresh.';
+                return;
+            }
+            document.getElementById('text').innerText = posts[0].text;
+            posts[0].images.forEach(url => {
+                const img = document.createElement('img');
+                img.src = url;
+                document.getElementById('photos').appendChild(img);
+            });
+            let index = 0;
+            const imgs = document.querySelectorAll('#photos img');
+            if (imgs.length) imgs[0].classList.add('active');
+            setInterval(() => {
+                imgs[index].classList.remove('active');
+                index = (index + 1) % imgs.length;
+                imgs[index].classList.add('active');
+            }, 5000);
+        }
+        fetchPosts();
+    </script>
+
 <script>
-async function loadPost() {
-    const res = await fetch("/api/posts");
-    const data = await res.json();
-    const post = data.message || "No report found.";
-    const images = (data.attachments?.data ?? []).map(img => img.media?.image?.src).filter(Boolean);
+function adjustTextSize() {
+    const textContainer = document.getElementById('text');
+    let fontSize = parseInt(window.getComputedStyle(textContainer).fontSize);
 
-    document.getElementById("text").innerText = post;
-
-    if (images.length) {
-        let index = 0;
-        const imgEl = document.createElement("img");
-        imgEl.src = images[0];
-        document.getElementById("image").innerHTML = "";
-        document.getElementById("image").appendChild(imgEl);
-
-        setInterval(() => {
-            index = (index + 1) % images.length;
-            imgEl.src = images[index];
-        }, 5000);
-    } else {
-        document.getElementById("image").innerHTML = "<em>No image available.</em>";
+    while (textContainer.scrollHeight > textContainer.clientHeight && fontSize > 20) {
+        fontSize -= 1;
+        textContainer.style.fontSize = fontSize + "px";
     }
 }
 
-loadPost();
+window.onload = adjustTextSize;
+window.onresize = adjustTextSize;
 </script>
+
 </body>
 </html>
