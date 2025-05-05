@@ -9,11 +9,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/posts', async (req, res) => {
     try {
-        const PAGE_ID = process.env.PAGE_ID || 'YOUR_PAGE_ID';
-        const ACCESS_TOKEN = process.env.ACCESS_TOKEN || 'YOUR_ACCESS_TOKEN';
+        const PAGE_ID = process.env.PAGE_ID || '210175288809';
+        const ACCESS_TOKEN = process.env.ACCESS_TOKEN || 'EAAUHRrIZCMu8BO2ZCB9hmKb6iJfis22wnmH0ySeUHTE1TdmQTkxavxZCgs22iXmItj583cxVxlf8mLucOJhMkaAoZCZCizikrsO4gAH1dVsTeh5mzwHt5NP9yoX7MT0Dl4lEj4t2O3cQbQ2ZArKKAZBgyYO0M82DvZAEvSHkZCji721VHhoT39fmMRsEs9rIZD';
         const HASHTAG = process.env.HASHTAG || '#fishingreport';
 
-        const url = `https://graph.facebook.com/v19.0/${PAGE_ID}/posts?fields=message,full_picture,created_time&access_token=${ACCESS_TOKEN}`;
+        const url = `https://graph.facebook.com/v19.0/${210175288809}/posts?fields=message,full_picture,created_time&access_token=${EAAUHRrIZCMu8BO2ZCB9hmKb6iJfis22wnmH0ySeUHTE1TdmQTkxavxZCgs22iXmItj583cxVxlf8mLucOJhMkaAoZCZCizikrsO4gAH1dVsTeh5mzwHt5NP9yoX7MT0Dl4lEj4t2O3cQbQ2ZArKKAZBgyYO0M82DvZAEvSHkZCji721VHhoT39fmMRsEs9rIZD}`;
         const response = await fetch(url);
         const data = await response.json();
 
