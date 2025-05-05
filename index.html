@@ -1,63 +1,72 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frank & Fran's Fishing Report</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial Black', sans-serif;
-            background: #eff6fc;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-        .left {
-            width: 50%;
-            padding: 2vw;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            color: #0a285f;
-        }
-        .header {
-            font-size: clamp(40px, 7vw, 90px);
-            margin-bottom: 1vw;
-        }
-        .body {
-            font-size: clamp(24px, 4vw, 60px);
-            line-height: 1.4;
-            flex-grow: 1;
-            overflow: hidden;
-        }
-        .right {
-            width: 50%;
-            background: #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .right img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 20px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frank & Fran's Fishing Report</title>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #e9eff5;
+    color: #0b2653;
+    display: flex;
+    height: 100vh;
+}
+#text {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: left;
+    font-weight: 800;
+    font-size: clamp(24px, 5vw, 70px);
+    line-height: 1.2;
+}
+#image {
+    flex: 1;
+    background-color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#image img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+</style>
 </head>
 <body>
-    <div class="left">
-        <div class="header">FRANK & FRAN'S HATTERAS ISLAND FISHING REPORT - 5/4/2025</div>
-        <div class="body">
-            It has been beautiful but windy here on the island today, making fishing conditions a little harder. We had reports of bluefish in Buxton and a couple of sheepshead caught in Hatteras. Curtis with the 8 lb 15 oz citation sheepshead. It was caught on a Psycho's Surf Fishing Jumbo legs & eggs rig on ramp 55. Way to go Curtis!! We got in a fresh load of mullet and we are stocked and ready to go for the weekend! #hookedonfandf #fishingreport
-        </div>
-    </div>
-    <div class="right">
-        <img src="fish-sample.jpg" alt="Fishing photo">
-    </div>
+<div id="text">Loading latest fishing report...</div>
+<div id="image"><em>Loading image...</em></div>
+<script>
+async function loadPost() {
+    const res = await fetch("/api/posts");
+    const data = await res.json();
+    const post = data.message || "No report found.";
+    const images = (data.attachments?.data ?? []).map(img => img.media?.image?.src).filter(Boolean);
+
+    document.getElementById("text").innerText = post;
+
+    if (images.length) {
+        let index = 0;
+        const imgEl = document.createElement("img");
+        imgEl.src = images[0];
+        document.getElementById("image").innerHTML = "";
+        document.getElementById("image").appendChild(imgEl);
+
+        setInterval(() => {
+            index = (index + 1) % images.length;
+            imgEl.src = images[index];
+        }, 5000);
+    } else {
+        document.getElementById("image").innerHTML = "<em>No image available.</em>";
+    }
+}
+
+loadPost();
+</script>
 </body>
 </html>
