@@ -1,13 +1,13 @@
+
 {
-  "name": "fb-widget",
+  "name": "fb-widget-debug",
   "version": "1.0.0",
   "main": "server.js",
-  "type": "commonjs",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "node-fetch": "^2.6.7"
+    "express": "^4.17.1",
+    "node-fetch": "^2.6.1"
   }
 }
