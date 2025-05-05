@@ -4,8 +4,8 @@
     <title>Frank & Fran's Fishing Report</title>
     <style>
         body { font-family: Arial; margin: 0; background: #eef4fa; color: #001d4a; text-align: center; }
-        h1 { padding: 10px; font-size: 30px; }
-        #content { display: flex; justify-content: space-around; align-items: left; height: 90vh; }
+        h1 { padding: 10px; font-size: 3vw; }
+        #content { display: flex; justify-content: space-around; align-items: flex-start; height: 90vh; }
         #text { flex: 1; font-size: 1.75vw; padding: 20px; overflow-y: auto; text-align: left;}
         #photos { flex: 1; }
         #photos img { max-width: 100%; max-height: 80vh; display: none; }
@@ -13,9 +13,9 @@
     </style>
 </head>
 <body>
-    <h1>Frank & Fran's Fishing Report</h1>
+    <h1 id="header">Loading...</h1>
     <div id="content">
-        <div id="text">Loading...</div>
+        <div id="text"></div>
         <div id="photos"></div>
     </div>
     <script>
@@ -23,25 +23,40 @@
             const res = await fetch('/fb-posts');
             const posts = await res.json();
             if (!posts.length) {
-                document.getElementById('text').innerText = 'Failed to load posts. Please refresh.';
+                document.getElementById('header').innerText = 'Failed to load posts.';
                 return;
             }
-            document.getElementById('text').innerText = posts[0].text;
+
+            // Extract header from first line of post
+            const postText = posts[0].text;
+            const lines = postText.split("\n");
+            const headerLine = lines.shift(); // Remove first line for header
+            const bodyText = lines.join("\n"); // Remaining text for body
+
+            // Set header and body
+            document.getElementById('header').innerText = headerLine;
+            document.getElementById('text').innerText = bodyText;
+
+            // Load photos
             posts[0].images.forEach(url => {
                 const img = document.createElement('img');
                 img.src = url;
                 document.getElementById('photos').appendChild(img);
             });
+
             let index = 0;
             const imgs = document.querySelectorAll('#photos img');
             if (imgs.length) imgs[0].classList.add('active');
+
             setInterval(() => {
                 imgs[index].classList.remove('active');
                 index = (index + 1) % imgs.length;
                 imgs[index].classList.add('active');
             }, 5000);
         }
+
         fetchPosts();
     </script>
 </body>
 </html>
+
