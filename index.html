@@ -39,7 +39,7 @@
   <div id="posts"></div>
   <div id="slideshow"></div>
   <script>
-    fetch('https://fb-widget-4.onrender.com/fb-posts')
+    fetch('/fb-posts')
       .then(res => {
         if (!res.ok) throw new Error("Network response was not ok");
         return res.json();
