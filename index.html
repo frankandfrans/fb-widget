@@ -6,82 +6,46 @@
     <style>
         body { font-family: Arial; margin: 0; background: #eef4fa; color: #001d4a; text-align: center; }
         h1 { padding: 10px; font-size: 30px; }
-        #content { display: flex; justify-content: space-around; align-items: flex-start; height: 90vh; }
+        #content { display: flex; justify-content: space-around; align-items: left; height: 90vh; }
         #text { flex: 1; font-size: 1.75vw; padding: 20px; overflow-y: auto; text-align: left; }
         #photos { flex: 1; }
         #photos img { max-width: 100%; max-height: 80vh; display: none; }
         #photos img.active { display: block; }
-        #debug { position: fixed; bottom: 0; left: 0; background: rgba(0,0,0,0.8); color: #fff; padding: 5px; font-size: 12px; width: 100%; }
     </style>
 </head>
 <body>
     <h1 id="header">Loading Header...</h1>
     <div id="content">
-        <div id="text">Loading Post...</div>
+        <div id="text">Loading...</div>
         <div id="photos"></div>
     </div>
-    <div id="debug">Debug: Starting...</div>
-
-    <script>
-        const debugEl = document.getElementById('debug');
-
-        function debug(msg) {
-            console.log(msg);
-            debugEl.innerText = "Debug: " + msg;
+<script>
+async function fetchPosts() {
+    try {
+        const res = await fetch('/fb-posts');
+        const posts = await res.json();
+        console.log("Fetched posts:", posts);
+        if (!posts.length) {
+            document.getElementById('text').innerText = 'No posts found.';
+            document.getElementById('header').innerText = 'No Header';
+            return;
         }
+        document.getElementById('header').innerText = posts[0].text.split("\n")[0] || 'Fishing Report';
+        document.getElementById('text').innerText = posts[0].text;
 
-        async function fetchPosts() {
-            debug("Fetching posts...");
-            try {
-                const res = await fetch('/fb-posts');
-                debug("Fetch result status: " + res.status);
-                if (!res.ok) {
-                    debug("Fetch error: " + res.statusText);
-                    document.getElementById('text').innerText = 'Failed to load posts. Please refresh.';
-                    return;
-                }
+        posts[0].images.forEach(url => {
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = "active";
+            document.getElementById('photos').appendChild(img);
+        });
+    } catch (err) {
+        console.error("Failed fetching posts", err);
+        document.getElementById('text').innerText = 'Error loading posts.';
+    }
+}
 
-                const posts = await res.json();
-                debug("Posts received: " + posts.length);
-                if (!posts.length) {
-                    document.getElementById('text').innerText = 'No posts found.';
-                    return;
-                }
-
-                const post = posts[0];
-                const lines = post.text.split('\n');
-                document.getElementById('header').innerText = lines[0];
-                document.getElementById('text').innerText = post.text;
-
-                post.images.forEach(url => {
-                    const img = document.createElement('img');
-                    img.src = url;
-                    img.onload = () => debug("Loaded image: " + url);
-                    img.onerror = () => debug("Image failed: " + url);
-                    document.getElementById('photos').appendChild(img);
-                });
-
-                startSlideshow();
-            } catch (e) {
-                debug("Exception: " + e);
-            }
-        }
-
-        function startSlideshow() {
-            const images = document.querySelectorAll('#photos img');
-            if (!images.length) return;
-
-            let current = 0;
-            images[current].classList.add('active');
-
-            setInterval(() => {
-                images[current].classList.remove('active');
-                current = (current + 1) % images.length;
-                images[current].classList.add('active');
-            }, 8000);
-        }
-
-        fetchPosts();
-    </script>
+fetchPosts();
+</script>
 </body>
 </html>
