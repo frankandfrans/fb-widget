@@ -81,7 +81,7 @@ async function fetchPosts() {
 
     // Dynamic font sizing
     function resizeText() {
-        let size = 3; // starting vw size
+        let size = 1; // starting vw size
         textInner.style.fontSize = size + "vw";
         while (textInner.scrollHeight > textInner.parentElement.clientHeight && size > 1) {
             size -= 0.2;
