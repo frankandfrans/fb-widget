@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const path = require('path');
 
 const PAGE_ID = 'YOUR_PAGE_ID';
-const ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN';
+const ACCESS_TOKEN = 'EAAUHRrIZCMu8BOyo9I9UKOSNJqWMqu3RC5jw18ZAyaM9d5eSbIVciFR5cI4ZAx9YUt1QBTmh8WEKYWopbjVXw0pD4tiBfGNkd8nO0HRZBGMzDGxTqZBmZByrRKNHaa0EYPMSO3wYd8fhfmHsDxFoNqMZCYmqEsZBCM74IRl0kK11vco5CGy0Ll2Gjmmg894ZD';
 
 const app = express();
 app.use(express.static(path.join(__dirname)));
