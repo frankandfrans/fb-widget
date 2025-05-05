@@ -1,1 +1,92 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frank & Fran's Fishing Report</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #edf2f7;
+            font-family: Arial, sans-serif;
+        }
+        .left {
+            width: 50%;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .right {
+            width: 50%;
+            background-color: #d3d3d3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            font-size: 3.5vw;
+            margin-bottom: 30px;
+        }
+        #post {
+            font-weight: bold;
+            line-height: 1.2;
+            font-size: 2.5vw;
+            word-wrap: break-word;
+        }
+        img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            background: white;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="left">
+        <h1>Frank & Fran's Fishing Report</h1>
+        <div id="post">Loading...</div>
+    </div>
+    <div class="right">
+        <img id="photo" src="" alt="Fishing Photo">
+    </div>
+
+    <script>
+        async function fetchPost() {
+            const res = await fetch('/api/posts');
+            const data = await res.json();
+
+            const postEl = document.getElementById('post');
+            const photoEl = document.getElementById('photo');
+
+            postEl.innerText = data.message;
+
+            if (data.imageUrl) {
+                photoEl.src = data.imageUrl;
+            } else {
+                photoEl.style.display = 'none';
+            }
+
+            adjustFontSize(postEl);
+        }
+
+        function adjustFontSize(element) {
+            let fontSize = 2.5;
+            element.style.fontSize = fontSize + "vw";
+
+            while (element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth) {
+                fontSize -= 0.1;
+                element.style.fontSize = fontSize + "vw";
+                if (fontSize <= 1) break;
+            }
+        }
+
+        fetchPost();
+    </script>
+</body>
+</html>
