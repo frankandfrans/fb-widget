@@ -1,112 +1,63 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Frank & Fran's Fishing Report</title>
     <style>
-        html, body {
+        body {
             margin: 0;
             padding: 0;
-            background: #eef4fa;
-            color: #001d4a;
-            font-family: Arial, sans-serif;
-            height: 100%;
-            width: 100%;
+            font-family: 'Arial Black', sans-serif;
+            background: #eff6fc;
+            display: flex;
+            height: 100vh;
             overflow: hidden;
         }
-        #header {
-            font-weight: bold;
-            font-size: 4vw;
-            text-align: center;
-            padding: 20px;
-            background-color: #dbe9f4;
-        }
-        #content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: calc(100% - 80px);
-            padding: 20px;
+        .left {
+            width: 50%;
+            padding: 2vw;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            color: #0a285f;
         }
-        #text {
-            width: 48%;
-            font-weight: 700;
+        .header {
+            font-size: clamp(40px, 7vw, 90px);
+            margin-bottom: 1vw;
+        }
+        .body {
+            font-size: clamp(24px, 4vw, 60px);
+            line-height: 1.4;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .right {
+            width: 50%;
+            background: #ddd;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: left;
         }
-        #text-inner {
-            width: 100%;
-            font-size: 3vw;
-            line-height: 1.3;
-        }
-        #photos {
-            width: 48%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #photos img {
+        .right img {
             max-width: 100%;
             max-height: 100%;
-            display: none;
-            border-radius: 10px;
-        }
-        #photos img.active {
-            display: block;
+            object-fit: contain;
+            border-radius: 20px;
         }
     </style>
 </head>
 <body>
-    <div id="header">Loading...</div>
-    <div id="content">
-        <div id="text"><div id="text-inner">Loading...</div></div>
-        <div id="photos"></div>
+    <div class="left">
+        <div class="header">FRANK & FRAN'S HATTERAS ISLAND FISHING REPORT - 5/4/2025</div>
+        <div class="body">
+            It has been beautiful but windy here on the island today, making fishing conditions a little harder. We had reports of bluefish in Buxton and a couple of sheepshead caught in Hatteras. Curtis with the 8 lb 15 oz citation sheepshead. It was caught on a Psycho's Surf Fishing Jumbo legs & eggs rig on ramp 55. Way to go Curtis!! We got in a fresh load of mullet and we are stocked and ready to go for the weekend! #hookedonfandf #fishingreport
+        </div>
     </div>
-<script>
-async function fetchPosts() {
-    const res = await fetch('/fb-posts');
-    const posts = await res.json();
-    if (!posts.length) {
-        document.getElementById('header').innerText = "No posts available.";
-        return;
-    }
-
-    const lines = posts[0].text.split('\n');
-    document.getElementById('header').innerText = lines[0];
-    const bodyText = lines.slice(1).join("\n");
-    const textInner = document.getElementById('text-inner');
-    textInner.innerText = bodyText;
-
-    // Dynamic font sizing
-    function resizeText() {
-        let size = 3; // starting vw size
-        textInner.style.fontSize = size + "vw";
-        while (textInner.scrollHeight > textInner.parentElement.clientHeight && size > 1) {
-            size -= 0.2;
-            textInner.style.fontSize = size + "vw";
-        }
-    }
-    resizeText();
-
-    posts[0].images.forEach(url => {
-        const img = document.createElement('img');
-        img.src = url;
-        document.getElementById('photos').appendChild(img);
-    });
-
-    let index = 0;
-    const imgs = document.querySelectorAll('#photos img');
-    if (imgs.length) imgs[0].classList.add('active');
-    setInterval(() => {
-        imgs[index].classList.remove('active');
-        index = (index + 1) % imgs.length;
-        imgs[index].classList.add('active');
-    }, 5000);
-}
-
-fetchPosts();
-</script>
+    <div class="right">
+        <img src="fish-sample.jpg" alt="Fishing photo">
+    </div>
 </body>
 </html>
