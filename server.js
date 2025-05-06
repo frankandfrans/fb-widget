@@ -8,19 +8,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const PAGE_ID = '210175288809';
-const ACCESS_TOKEN = 'EAAUHRrIZCMu8BOyo9I9UKOSNJqWMqu3RC5jw18ZAyaM9d5eSbIVciFR5cI4ZAx9YUt1QBTmh8WEKYWopbjVXw0pD4tiBfGNkd8nO0HRZBGMzDGxTqZBmZByrRKNHaa0EYPMSO3wYd8fhfmHsDxFoNqMZCYmqEsZBCM74IRl0kK11vco5CGy0Ll2Gjmmg894ZD';
-
-const IMAGES_DIR = path.join(__dirname, 'images');
-if (!fs.existsSync(IMAGES_DIR)){
-    fs.mkdirSync(IMAGES_DIR);
-}
-
-app.use('/images', express.static(IMAGES_DIR));
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 
 app.get('/', async (req, res) => {
   const post = await fetchPost();
 
-  let html = `
+  let html = \`
 <!DOCTYPE html>
 <html>
 <head>
@@ -35,31 +28,30 @@ app.get('/', async (req, res) => {
 </style>
 </head>
 <body>
-`;
+\`;
 
   if (post) {
     const lines = post.text.split('\n');
     const titleLine = lines.shift();
 
-    html += `<h1>${titleLine}</h1><div class="post-content"><p>${lines.join('<br>')}</p></div>`;
+    html += \`<h1>\${titleLine}</h1><div class="post-content"><p>\${lines.join('<br>')}</p></div>\`;
 
-    post.images.forEach(src => {
-      const filename = path.basename(src.split("?")[0]);
-      html += `<img src="/images/${filename}" alt="Fishing image">`;
-    });
+    for (const img of post.images) {
+      html += \`<img src="data:image/jpeg;base64,\${img}" alt="Fishing image">\`;
+    }
   } else {
-    html += `<h1>No fishing reports available right now.</h1>`;
+    html += \`<h1>No fishing reports available right now.</h1>\`;
   }
 
-  html += `
+  html += \`
 </body>
-</html>`;
+</html>\`;
 
   res.send(html);
 });
 
 async function fetchPost() {
-  const url = `https://graph.facebook.com/v22.0/${PAGE_ID}/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=${ACCESS_TOKEN}`;
+  const url = \`https://graph.facebook.com/v22.0/\${PAGE_ID}/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=\${ACCESS_TOKEN}\`;
   const res = await fetch(url);
   if (!res.ok) {
     const errText = await res.text();
@@ -92,21 +84,32 @@ async function fetchPost() {
     })[0];
 
   if (post && post.images.length) {
+    const base64Images = [];
     for (const url of post.images) {
-      const filename = path.basename(url.split("?")[0]);
-      const filepath = path.join(IMAGES_DIR, filename);
-      if (!fs.existsSync(filepath)) {
-        const file = fs.createWriteStream(filepath);
-        https.get(url, (response) => {
-          response.pipe(file);
-        });
+      try {
+        const imageBuffer = await downloadImage(url);
+        const base64 = imageBuffer.toString('base64');
+        base64Images.push(base64);
+      } catch (err) {
+        console.error("Error downloading image", err);
       }
     }
+    post.images = base64Images;
   }
 
   return post;
 }
 
+function downloadImage(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      const data = [];
+      res.on('data', chunk => data.push(chunk));
+      res.on('end', () => resolve(Buffer.concat(data)));
+    }).on('error', reject);
+  });
+}
+
 app.listen(PORT, () => {
-  console.log(`Fishing Report Widget running on port ${PORT}`);
+  console.log(\`Fishing Report Widget running on port \${PORT}\`);
 });

@@ -1,5 +1,5 @@
 {
-  "name": "fishing-report-proxy-widget",
+  "name": "fishing-report-base64-widget",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
