@@ -1,61 +1,112 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
-
-const PAGE_ID = '210175288809';
-const ACCESS_TOKEN = 'EAAUHRrIZCMu8BOyo9I9UKOSNJqWMqu3RC5jw18ZAyaM9d5eSbIVciFR5cI4ZAx9YUt1QBTmh8WEKYWopbjVXw0pD4tiBfGNkd8nO0HRZBGMzDGxTqZBmZByrRKNHaa0EYPMSO3wYd8fhfmHsDxFoNqMZCYmqEsZBCM74IRl0kK11vco5CGy0Ll2Gjmmg894ZD';
+const fs = require('fs');
+const https = require('https');
 
 const app = express();
-
-app.use((req, res, next) => {
-  res.header('Cache-Control', 'no-store');
-  res.header('Access-Control-Allow-Origin', '*');
-  next();
-});
-
-app.use(express.static(__dirname));
-
-app.get('/fb-posts', async (req, res) => {
-  try {
-    const url = `https://graph.facebook.com/v22.0/${PAGE_ID}/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=${ACCESS_TOKEN}`;
-
-    const fbRes = await fetch(url);
-
-    if (!fbRes.ok) {
-      const errText = await fbRes.text();
-      console.error("⛔ Facebook API Error:", errText);
-      return res.status(500).json({ error: 'Facebook API Error', details: errText });
-    }
-
-    const json = await fbRes.json();
-    console.log("✅ Facebook JSON:", JSON.stringify(json, null, 2));
-
-    const posts = json.data
-      ?.filter(p => p.message && p.message.includes('#hookedonfandf') && p.message.includes('#fishingreport'))
-      .slice(0, 1)
-      .map(p => {
-        const images = [];
-        const attach = p.attachments?.data[0];
-        if (attach?.subattachments) {
-          attach.subattachments.data.forEach(s => {
-            images.push(s.media.image.src);
-          });
-        } else if (attach?.media) {
-          images.push(attach.media.image.src);
-        }
-        return { text: p.message, images };
-      });
-
-    res.json(posts);
-  } catch (err) {
-    console.error("🔥 Unhandled error:", err);
-    res.status(500).json({ error: 'Failed to fetch posts' });
-  }
-});
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+const PAGE_ID = '210175288809';
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
+
+const IMAGES_DIR = path.join(__dirname, 'images');
+if (!fs.existsSync(IMAGES_DIR)){
+    fs.mkdirSync(IMAGES_DIR);
+}
+
+app.use('/images', express.static(IMAGES_DIR));
+
+app.get('/', async (req, res) => {
+  const post = await fetchPost();
+
+  let html = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frank & Fran's Fishing Reports</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f8f8f8; margin: 0; padding: 20px; text-align: center; }
+  h1 { font-size: 2.5em; margin-bottom: 20px; color: #003366; }
+  .post-content { font-size: 1.2em; max-width: 1200px; margin: 0 auto 40px auto; text-align: left; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  img { width: 500px; margin: 20px 0; border-radius: 8px; }
+</style>
+</head>
+<body>
+`;
+
+  if (post) {
+    const lines = post.text.split('\n');
+    const titleLine = lines.shift();
+
+    html += `<h1>${titleLine}</h1><div class="post-content"><p>${lines.join('<br>')}</p></div>`;
+
+    post.images.forEach(src => {
+      const filename = path.basename(src.split("?")[0]);
+      html += `<img src="/images/${filename}" alt="Fishing image">`;
+    });
+  } else {
+    html += `<h1>No fishing reports available right now.</h1>`;
+  }
+
+  html += `
+</body>
+</html>`;
+
+  res.send(html);
+});
+
+async function fetchPost() {
+  const url = `https://graph.facebook.com/v22.0/${PAGE_ID}/posts?fields=message,attachments{subattachments{media},media}&limit=10&access_token=${ACCESS_TOKEN}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("Failed to fetch FB posts:", errText);
+    return null;
+  }
+
+  const json = await res.json();
+  if (!json || !json.data) {
+    console.error("No data returned from Facebook.");
+    return null;
+  }
+
+  const post = json.data
+    .filter(p => {
+      if (!p.message) return false;
+      const msg = p.message.toLowerCase();
+      return msg.includes('#hookedonfandf') || msg.includes('#fishingreport');
+    })
+    .slice(0, 1)
+    .map(p => {
+      const images = [];
+      const attach = p.attachments?.data[0];
+      if (attach?.subattachments) {
+        attach.subattachments.data.forEach(s => images.push(s.media.image.src));
+      } else if (attach?.media) {
+        images.push(attach.media.image.src);
+      }
+      return { text: p.message, images };
+    })[0];
+
+  if (post && post.images.length) {
+    for (const url of post.images) {
+      const filename = path.basename(url.split("?")[0]);
+      const filepath = path.join(IMAGES_DIR, filename);
+      if (!fs.existsSync(filepath)) {
+        const file = fs.createWriteStream(filepath);
+        https.get(url, (response) => {
+          response.pipe(file);
+        });
+      }
+    }
+  }
+
+  return post;
+}
+
+app.listen(PORT, () => {
+  console.log(`Fishing Report Widget running on port ${PORT}`);
+});

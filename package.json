@@ -1,5 +1,5 @@
 {
-  "name": "fb-widget-ssr-static",
+  "name": "fishing-report-proxy-widget",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
